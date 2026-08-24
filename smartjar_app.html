@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Jar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-dark:#12213D; --navy-mid:#1B3358; --navy-glow:#2A4A7C;
+  --blue:#2E7BC4; --blue-deep:#1F5D9C; --blue-bg:#EAF2FB;
+  --bg:#F3F5F8; --card:#FFFFFF; --ink:#16233D; --gray:#6B7280; --mute:#9CA3AF;
+  --rule:#E5E9EF; --fill:#F0F2F5; --fill2:#E8ECF0;
+  --green:#16A34A; --green-bg:#E8F7EE; --green-line:#BCE8CC;
+  --amber:#D97706; --amber-bg:#FDF1DF; --amber-line:#F3D9AE;
+  --red:#DC2626; --red-bg:#FCE9E9; --red-line:#F5C6C6;
+  --gray-bg:#EEF0F3; --gray-line:#DADFE5;
+  --r-lg:20px; --r-md:14px; --r-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:#DDE3EA; font-family:'Inter',sans-serif; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px;
+}
+.display{font-family:'Poppins',sans-serif}
+
+/* ---------- phone shell ---------- */
+.phone{
+  width:390px; height:820px; background:var(--bg); border-radius:44px;
+  overflow:hidden; box-shadow:0 30px 60px -20px rgba(18,33,61,.45), 0 0 0 10px #0B1526;
+  position:relative; display:flex; flex-direction:column;
+}
+.notch{
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:150px; height:26px; background:#0B1526; border-radius:0 0 18px 18px; z-index:50;
+}
+.langtoggle{
+  position:absolute; top:34px; right:20px; z-index:60; width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-family:'Poppins',sans-serif; font-size:10px; font-weight:700; letter-spacing:.01em;
+}
+.langtoggle:active{background:rgba(255,255,255,.2)}
+.scroll{flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ---------- header banner ---------- */
+.banner{
+  background:linear-gradient(160deg, var(--navy-mid) 0%, var(--navy-dark) 65%, #0E1A30 100%);
+  padding:34px 20px 16px; color:#fff; position:relative; flex-shrink:0;
+  min-height:136px; box-sizing:border-box;
+}
+.banner .row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+.banner h1{
+  font-family:'Poppins',sans-serif; font-size:21px; font-weight:700; letter-spacing:-.01em;
+  display:flex; align-items:center; gap:7px; line-height:1.2;
+}
+.banner .status{
+  display:flex; align-items:center; gap:6px; font-size:12px; color:#B9C7DE; margin-top:5px;
+}
+.dot{width:6px; height:6px; border-radius:50%; background:#3ECF77; flex:0 0 auto;
+  box-shadow:0 0 0 3px rgba(62,207,119,.22)}
+.dot.off{background:#5A6B87; box-shadow:none}
+.live-dot{width:10px; height:10px; border-radius:50%; background:var(--green); flex:0 0 auto;
+  box-shadow:0 0 0 3px var(--green-bg)}
+.backarrow{
+  width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.1); color:#fff;
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto; cursor:pointer; margin-bottom:8px;
+}
+.backarrow:active{background:rgba(255,255,255,.2)}
+.backarrow svg{width:16px; height:16px}
+
+/* ---------- body ---------- */
+.body{padding:16px; padding-bottom:28px}
+.card{
+  background:var(--card); border:1px solid var(--rule); border-radius:var(--r-lg);
+  padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(18,33,61,.04);
+}
+.card:last-child{margin-bottom:0}
+.card h3{font-family:'Poppins',sans-serif; font-size:14.5px; font-weight:600; margin-bottom:10px; display:flex; align-items:center; gap:7px}
+.card h3 svg{width:15px; height:15px}
+
+.f{display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:11px 0; border-bottom:1px solid var(--fill)}
+.f:last-child{border-bottom:none; padding-bottom:0}
+.f:first-child{padding-top:0}
+.f .k{font-size:13px; color:var(--gray); display:flex; align-items:center; gap:6px}
+.f .k svg{width:14px; height:14px; flex:0 0 auto}
+.f .v{font-size:13.5px; font-weight:600; text-align:right}
+.f .v.mute{color:var(--mute); font-weight:400; font-size:12.5px}
+.tagrow{display:flex; gap:5px; margin-top:2px; flex-wrap:wrap}
+
+.chip{font-size:10px; font-weight:600; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.04em}
+.chip.live{background:var(--green-bg); color:var(--green); border:1px solid var(--green-line)}
+.chip.low{background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-line)}
+.chip.alert{background:var(--red-bg); color:var(--red); border:1px solid var(--red-line)}
+.chip.offline{background:var(--gray-bg); color:var(--gray); border:1px solid var(--gray-line)}
+.chip.off{background:var(--red-bg); color:var(--red); border:1px solid var(--red-line)}
+.chip.manual{background:var(--gray-bg); color:var(--gray); border:1px solid var(--gray-line)}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:7px; width:100%;
+  padding:13px; border-radius:14px; font-family:'Poppins',sans-serif; font-weight:600; font-size:14px;
+  border:none; cursor:pointer; transition:transform .1s;
+}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:linear-gradient(135deg,var(--blue) 0%, var(--blue-deep) 100%); color:#fff;
+  box-shadow:0 8px 18px -6px rgba(46,123,196,.55)}
+.btn.outline{background:#fff; border:1.5px solid var(--blue); color:var(--blue)}
+.btn.outline.red{border-color:var(--red); color:var(--red)}
+.btn.ghost{background:var(--fill); color:var(--gray); font-weight:500}
+.btn.ghost-dark{background:rgba(255,255,255,.08); color:#fff; font-weight:500; border:1.5px solid rgba(255,255,255,.14)}
+.btn.sm{padding:9px; font-size:12.5px; border-radius:11px}
+.btn2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+
+.field{margin-bottom:12px}
+.field label{display:block; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--mute); margin-bottom:6px}
+.field input, .field select{
+  width:100%; padding:12px 13px; border:1.5px solid var(--rule); border-radius:12px;
+  font-family:'Inter',sans-serif; font-size:14px; color:var(--ink); background:#fff;
+}
+.field input:focus, .field select:focus{outline:none; border-color:var(--blue)}
+.field.on-dark label{color:#9FB2CE}
+.field.on-dark input{background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); color:#fff}
+.field.on-dark input::placeholder{color:rgba(255,255,255,.42)}
+.field.on-dark input:focus{border-color:rgba(255,255,255,.4)}
+.hint{font-size:11.5px; color:var(--mute); line-height:1.5; margin:8px 0 14px}
+
+.toggle{width:44px; height:26px; border-radius:20px; background:var(--gray-line); position:relative;
+  cursor:pointer; flex:0 0 auto; transition:background .15s}
+.toggle.on{background:var(--green)}
+.toggle .knob{width:20px; height:20px; background:#fff; border-radius:50%; position:absolute; top:3px; left:3px;
+  transition:left .15s; box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.toggle.on .knob{left:21px}
+
+/* ---------- ring / hero ---------- */
+.hero{
+  background:linear-gradient(150deg, var(--navy-mid), var(--navy-dark));
+  border-radius:var(--r-lg); padding:22px 16px 20px; text-align:center; color:#fff; margin-bottom:12px;
+  position:relative; overflow:hidden;
+}
+.hero::before{content:'';position:absolute; inset:0;
+  background:radial-gradient(circle at 20% 0%, rgba(46,123,196,.28), transparent 55%)}
+.ring{width:150px; height:150px; border-radius:50%; margin:0 auto 14px; position:relative;
+  display:flex; align-items:center; justify-content:center; z-index:1}
+.ring .track{position:absolute; inset:0; border-radius:50%}
+.ring .inner{width:112px; height:112px; background:#0F1D34; border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.ring .pct{font-family:'Poppins',sans-serif; font-size:29px; font-weight:800}
+.ring .amt{font-size:11px; color:#B9C7DE; margin-top:2px}
+.hero h2{font-family:'Poppins',sans-serif; font-size:19px; font-weight:700; position:relative; z-index:1}
+.hero .sub{font-size:12px; color:#9FB2CE; margin-top:2px; position:relative; z-index:1}
+.hero .chip{margin-top:10px; display:inline-block; position:relative; z-index:1}
+
+/* ---------- lists ---------- */
+.row-tap{cursor:pointer}
+.jarrow{display:flex; align-items:center; gap:11px; padding:12px 0; border-bottom:1px solid var(--fill)}
+.jarrow .chip, .jarrow .live-dot{position:relative; top:1px}
+.jarrow:last-child{border-bottom:none; padding-bottom:0}
+.jarrow:first-child{padding-top:0}
+.thumb{width:44px; height:44px; border-radius:12px; flex:0 0 auto; background:var(--fill);
+  display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:19px}
+.jarrow .info{flex:1; min-width:0}
+.jarrow .nm{font-size:14.5px; font-weight:600; font-family:'Poppins',sans-serif}
+.jarrow .mt{font-size:12px; color:var(--mute); margin-top:2px}
+.jr-right{display:flex; align-items:center; gap:10px; flex:0 0 auto}
+.jr-pct{display:flex; align-items:center; gap:6px}
+.jarrow .pctv{font-family:'Poppins',sans-serif; font-size:15px; font-weight:700; white-space:nowrap}
+.jr-icons{display:flex; align-items:center; gap:6px}
+.chev{color:var(--mute); font-size:16px; margin-left:2px}
+
+.colrow{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.colrow .nm{font-family:'Poppins',sans-serif; font-size:15px; font-weight:700}
+.colrow .mt{font-size:12px; color:var(--mute); margin-top:2px}
+
+/* ---------- alerts ---------- */
+.seg{display:flex; background:var(--fill); border-radius:12px; padding:3px; margin-bottom:14px}
+.seg div{flex:1; text-align:center; font-size:12.5px; font-weight:600; padding:8px 4px; border-radius:9px;
+  color:var(--gray); cursor:pointer}
+.seg div.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(18,33,61,.12)}
+.al{display:flex; align-items:center; gap:10px}.al .aicon{width:34px; height:34px; border-radius:11px; background:var(--fill); color:var(--gray);
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto}
+.al .aicon.lo{background:var(--amber-bg); color:var(--amber)}
+.al .txt{flex:1; min-width:0}
+.al .ti{font-size:13.5px; font-weight:600; line-height:1.3}
+.al .mt{font-size:11px; color:var(--mute); margin-top:2px}
+.acts{display:flex; gap:6px; flex:0 0 auto}
+.act{width:32px; height:32px; border-radius:10px; border:1.5px solid var(--rule); background:var(--fill2);
+  color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer}
+.act svg{width:16px; height:16px}
+.act.ok{border-color:var(--green-line); background:var(--green-bg); color:var(--green)}
+.act.rep{border-color:var(--amber-line); background:var(--amber-bg); color:var(--amber)}
+.act:active{transform:scale(.92)}
+
+/* ---------- collection accordion (Home) ---------- */
+.viewswitch{display:flex; align-items:center; gap:7px; margin:2px 4px 12px; font-size:12px}
+.viewswitch span{color:var(--mute); cursor:pointer; font-weight:500}
+.viewswitch span.on{color:var(--ink); font-weight:700}
+.viewswitch .vs-dot{color:var(--rule); cursor:default}
+.col-card{background:var(--card); border:1px solid var(--rule); border-radius:var(--r-lg);
+  margin-bottom:12px; overflow:hidden}
+.col-head{display:flex; align-items:center; gap:11px; padding:16px; cursor:pointer}
+.col-head .chip, .col-head .col-caret{position:relative; top:1px}
+.col-head .nm{font-family:'Poppins',sans-serif; font-size:17px; font-weight:700}
+.col-head .mt{font-size:12px; color:var(--mute); margin-top:2px}
+.col-caret{color:var(--mute); flex:0 0 auto; transition:transform .2s; display:flex}
+.col-caret.open{transform:rotate(180deg); color:var(--ink)}
+.col-jars{padding:4px 16px 14px}
+.jarlist{border-top:1px solid var(--fill)}
+.jarlist .jarrow:last-child{border-bottom:none; padding-bottom:0}
+.jarlist .jarrow:first-child{padding-top:12px}
+.ghost-row{
+  display:flex; align-items:center; justify-content:center; gap:7px; padding:12px;
+  border:1.5px dashed var(--rule); border-radius:12px; color:var(--mute); font-size:13px; font-weight:600;
+  cursor:pointer; margin-top:8px; background:transparent;
+}
+.ghost-row:active{background:var(--fill2)}
+.pctpill{flex:1; text-align:center; padding:9px 2px; border-radius:10px; border:1.5px solid var(--rule);
+  font-size:12.5px; font-weight:600; color:var(--gray); cursor:pointer}
+.pctpill.on{border-color:var(--blue); background:var(--blue-bg); color:var(--blue)}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex; background:#fff; border-top:1px solid var(--rule); flex-shrink:0;
+  padding:10px 4px calc(10px + env(safe-area-inset-bottom))}
+.tab{flex:1; display:flex; align-items:center; justify-content:center; padding:8px 2px;
+  cursor:pointer; color:var(--mute); position:relative}
+.tab svg{width:21px; height:21px}
+.tab.on{color:var(--blue)}
+.badge{position:absolute; top:2px; right:calc(50% - 18px); background:var(--red); color:#fff;
+  font-size:8.5px; font-weight:700; border-radius:8px; padding:1px 5px; min-width:15px; text-align:center}
+
+.empty{text-align:center; padding:34px 10px}
+.empty .ic{width:52px; height:52px; border-radius:16px; background:var(--blue-bg); color:var(--blue);
+  display:flex; align-items:center; justify-content:center; margin:0 auto 14px}
+.empty h4{font-family:'Poppins',sans-serif; font-size:16px; font-weight:700; margin-bottom:4px}
+.empty p{font-size:12.5px; color:var(--gray); margin-bottom:16px; line-height:1.5}
+
+.progress{height:7px; background:var(--fill); border-radius:6px; overflow:hidden; margin:2px 0}
+.progress i{display:block; height:100%; background:linear-gradient(90deg,var(--blue),var(--blue-deep)); border-radius:6px;
+  transition:width .4s}
+
+.stepdot{display:flex; gap:5px; margin-bottom:14px}
+.stepdot div{flex:1; height:4px; border-radius:3px; background:var(--rule)}
+.stepdot div.on{background:var(--blue)}
+
+.toast{
+  position:absolute; bottom:78px; left:16px; right:16px; background:var(--ink); color:#fff;
+  padding:12px 15px; border-radius:12px; font-size:13px; font-weight:600; text-align:center;
+  box-shadow:0 10px 24px rgba(0,0,0,.25); opacity:0; transform:translateY(8px); pointer-events:none;
+  transition:all .25s; z-index:80;
+}
+.toast.show{opacity:1; transform:translateY(0)}
+
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:absolute; inset:0; background:rgba(15,22,38,.55); z-index:90;
+  display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.modal-overlay.show{opacity:1; pointer-events:auto}
+.modal-sheet{
+  background:#fff; width:100%; border-radius:24px 24px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(24px); transition:transform .25s; max-height:88%; overflow-y:auto;
+}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-grab{width:36px; height:4px; background:var(--rule); border-radius:3px; margin:0 auto 14px}
+.modal-title{font-family:'Poppins',sans-serif; font-size:17px; font-weight:700; margin-bottom:4px}
+.modal-sub{font-size:12.5px; color:var(--gray); margin-bottom:16px; line-height:1.5}
+.errtype{display:flex; gap:7px; margin-bottom:14px}
+.errtype div{
+  flex:1; text-align:center; padding:11px 4px; border-radius:12px; border:1.5px solid var(--rule);
+  font-size:12.5px; font-weight:600; color:var(--gray); cursor:pointer;
+}
+.errtype div.on{border-color:var(--amber); background:var(--amber-bg); color:var(--amber)}
+textarea{
+  width:100%; padding:12px 13px; border:1.5px solid var(--rule); border-radius:12px;
+  font-family:'Inter',sans-serif; font-size:13.5px; color:var(--ink); resize:none; min-height:74px;
+}
+textarea:focus{outline:none; border-color:var(--blue)}
+.ingredient-row{display:flex; gap:8px; margin-bottom:8px}
+.ingredient-row input{flex:1}
+.ingredient-row .rm{
+  width:42px; height:42px; border-radius:11px; background:var(--red-bg); color:var(--red);
+  border:1px solid var(--red-line); display:flex; align-items:center; justify-content:center; flex:0 0 auto; cursor:pointer;
+}
+
+/* ---------- BLE provisioning ---------- */
+.stepbar{display:flex; align-items:center; margin-bottom:22px; padding:0 2px}
+.stepbar .sb-node{display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto}
+.stepbar .sb-circle{
+  width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:11.5px; font-weight:700; background:var(--fill); color:var(--mute); border:2px solid var(--rule);
+}
+.stepbar .sb-circle.on{background:var(--navy-dark); color:#fff; border-color:var(--navy-dark)}
+.stepbar .sb-circle.done{background:var(--green); color:#fff; border-color:var(--green)}
+.stepbar .sb-lbl{font-size:10px; font-weight:600; color:var(--mute)}
+.stepbar .sb-lbl.on{color:var(--ink)}
+.stepbar .sb-line{flex:1; height:2px; background:var(--rule); margin:0 4px 18px}
+.scan-target{
+  width:190px; height:190px; border-radius:50%; margin:6px auto 20px; position:relative;
+  background:radial-gradient(circle, #1B3358 0%, #0F1D34 70%);
+  display:flex; align-items:center; justify-content:center;
+}
+.scan-target .pulse{
+  position:absolute; inset:0; border-radius:50%; border:2px solid rgba(46,123,196,.4);
+  animation:pulse 2s ease-out infinite;
+}
+@keyframes pulse{0%{transform:scale(.7); opacity:.9}100%{transform:scale(1.18); opacity:0}}
+.scan-target .center{color:#fff; z-index:2}
+.foundrow{display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid var(--fill)}
+.foundrow:last-child{border-bottom:none}
+.foundrow .fic{width:34px; height:34px; border-radius:10px; background:var(--green-bg); color:var(--green);
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto}
+
+/* ---------- trends / history ---------- */
+.tl{margin-top:2px}
+.tl-item{position:relative; padding-left:22px; padding-bottom:16px}
+.tl-item:last-child{padding-bottom:0}
+.tl-dot{position:absolute; left:2px; top:4px; width:9px; height:9px; border-radius:50%;
+  background:var(--blue); border:2px solid #fff; box-shadow:0 0 0 1.5px var(--rule)}
+.tl-line{position:absolute; left:6px; top:15px; bottom:0; width:1px; background:var(--rule)}
+.tl-item:last-child .tl-line{display:none}
+.tl-time{font-size:11px; color:var(--mute); margin-bottom:3px}
+.tl-val{font-family:'Poppins',sans-serif; font-size:16px; font-weight:700}
+.tl-delta{font-size:12px; font-weight:600; margin-left:6px}
+.tl-delta.up{color:var(--green)}
+.tl-delta.down{color:var(--red)}
+.tl-sub{font-size:12px; color:var(--gray); margin-top:2px}
+.photo-block{width:100%; height:96px; border-radius:12px; margin-bottom:6px; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; font-size:30px}
+.chartwrap{background:var(--card); border:1px solid var(--rule); border-radius:var(--r-lg); padding:14px 12px 6px; margin-bottom:12px}
+.chart-legend{display:flex; gap:14px; margin-top:2px; font-size:11.5px; color:var(--gray)}
+.chart-legend span{display:inline-flex; align-items:center; gap:5px}
+.chart-legend i{width:8px; height:8px; border-radius:50%; display:inline-block}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="langtoggle" id="langtoggle" onclick="toggleLang()">EN</div>
+  <div class="scroll" id="app"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-sheet" id="modalSheet"></div>
+  </div>
+</div>
+
+<script>
+/* ============ ICONS ============ */
+const ic = {
+  home:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>',
+  jars:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 3h12v3l-2 2v13H8V8L6 6z"/></svg>',
+  bell:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 21a2 2 0 0 0 3.4 0"/></svg>',
+  more:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  battery:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2"/></svg>',
+  camera:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  scale:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 6v3a5 5 0 0 0 10 0V6M12 14v5M8 21h8"/></svg>',
+  gas:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-4 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2-6-6-11z"/></svg>',
+  clock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  tag:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20.6 12.6 12 21.2a2 2 0 0 1-2.8 0l-7.4-7.4a2 2 0 0 1 0-2.8L10.4 2.4a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v7a2 2 0 0 1-.4 1.2z"/><circle cx="16" cy="8" r="1.5"/></svg>',
+  bt:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg>',
+  wifi:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 20 0"/><circle cx="12" cy="20" r="1"/></svg>',
+  user:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+  grid:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/></svg>',
+  calib:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/></svg>',
+  firmware:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>',
+  help:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 0 1 5 1c0 1.7-2.5 2-2.5 3.5"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg>',
+  logout:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10M17 8l4 4-4 4M21 12H9"/></svg>',
+  mail:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>',
+  lock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 6 6L20 6"/></svg>',
+  flag:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v9"/><circle cx="12" cy="18.5" r=".6" fill="currentColor"/></svg>',
+  offline:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="9.5" width="8" height="5" rx="2.5" transform="rotate(-45 6.5 12)"/><rect x="13.5" y="9.5" width="8" height="5" rx="2.5" transform="rotate(-45 17.5 12)"/></svg>',
+  brokenlink:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="9.5" width="8" height="5" rx="2.5" transform="rotate(-45 6.5 12)"/><rect x="13.5" y="9.5" width="8" height="5" rx="2.5" transform="rotate(-45 17.5 12)"/></svg>',
+  back:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  sparkle:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.6L19 9l-5.2 1.4L12 16l-1.8-5.6L5 9l5.2-1.4z"/></svg>',
+  radar:'<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
+  search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>',
+  gear:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  caret:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  kitchen:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9a8 8 0 0 1 16 0"/><path d="M3 9h18"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M9 21v-4a3 3 0 0 1 6 0v4"/></svg>',
+  pantry:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M4 9h16M4 15h16"/><path d="M8 3v6M8 9v6M8 15v6"/></svg>',
+  bakery:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12c0-4 3-8 7-8s7 4 7 8"/><path d="M4 12h16l-1.2 7a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8z"/><path d="M9 12V9M12 12V8M15 12V9"/></svg>',
+  box:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 9-5 9 5-9 5-9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
+};
+
+/* ============ MOCK DATA ============ */
+let state = {
+  screen:'login', prevScreen:'home', alertsTab:'latest', addStep:1, activeCol:null, activeJar:null,
+  expandedCol:null, pairingForCol:null, jarOrigin:'home', homeView:'collections', lang:'en',
+  form:{name:'', collection:'Kitchen', size:'500 ml', threshold:30, fresh:true, batt:true},
+};
+let alertPrefs = {
+  freshness: true,
+  connectivity: true,
+  lowStock: {enabled:true, threshold:30},
+};
+
+/* ============ TRANSLATION ============ */
+function toggleLang(){ state.lang = state.lang==='en' ? 'zh' : 'en'; render(); }
+function t(s){ return state.lang==='zh' ? (ZH[s]||s) : s; }
+const ZH = {
+  // login
+  'Smart Jar':'智能罐', "Know what's in every jar, always":'随时知道每个罐子里有什么',
+  'Email':'邮箱', 'Password':'密码', 'Log in':'登录', 'Create account':'注册账号',
+  // tabs / common nav
+  'My Smart Inventory':'我的智能库存', 'Home':'首页', 'Alerts':'提醒', 'Dashboard':'仪表盘',
+  'Collections':'分类', 'All jars':'全部罐子', 'Add collection':'添加分类', 'Add a jar':'添加罐子',
+  'collections':'个分类', 'jars':'个罐子', 'jar':'个罐子', 'need attention':'需要关注',
+  // status chips
+  'Live':'在线', 'Low':'偏低', 'Alert':'警报', 'Offline':'离线',
+  // jar row / detail
+  'Last active':'最近活跃', 'Contents':'内容物', 'Jar ID':'罐子编号', 'Remaining':'剩余量',
+  'Last measured':'最近测量', 'Usage trend':'消耗趋势', 'Freshness':'新鲜度', 'Battery':'电量',
+  'Lid module':'盖子模块', 'Base':'底座', 'Measure now':'立即测量', 'Normal':'正常',
+  'Low, below your alert threshold':'偏低，低于您设定的提醒阈值',
+  'Offline, check power and Wi-Fi':'离线，请检查电源和 Wi-Fi',
+  'days':'天', 'No data':'暂无数据',
+  // alerts
+  'Latest alerts':'最新提醒', 'All alerts':'全部提醒', 'new':'条新提醒',
+  'All clear':'一切正常', 'No alerts need your attention right now.':'目前没有需要关注的提醒。',
+  'accepted':'已确认', 'reported':'已反馈',
+  'Report an issue':'反馈问题', "Tell us what went wrong so detection can improve.":'告诉我们哪里出了问题，帮助改进检测。',
+  'Error type':'错误类型', 'Weight':'重量', 'Image':'图像', 'Details (optional)':'详细说明（可选）',
+  'Submit report':'提交反馈', 'Cancel':'取消',
+  // dashboard
+  'My account':'我的账号', 'Manage jars':'管理罐子', 'total':'个', 'Notification alerts':'通知提醒',
+  'App version':'应用版本', 'Help':'帮助', 'Log out':'退出登录', 'Vikrant Mishra':'Vikrant Mishra',
+  // notification alerts screen
+  'Freshness alert':'新鲜度提醒', 'Tell me when the food may not be fresh':'食物可能不新鲜时提醒我',
+  'Connectivity error':'连接故障', 'Tell me when a jar stops reporting':'罐子停止上报时提醒我',
+  'Low stock':'库存偏低', 'Tell me when a jar runs low':'罐子快用完时提醒我', 'Alert me below':'低于此比例提醒我',
+  "These apply to every jar by default. Any jar can still be set individually when it's added.":'默认应用于所有罐子，添加罐子时仍可单独设置。',
+  // add jar chooser / pairing
+  'Choose how you\'d like to add it.':'选择添加方式。', 'Pair a new jar':'配对新罐子',
+  'BLE provisioning':'蓝牙配网', 'Reconnect an existing jar':'重新连接已有罐子',
+  'Pair a jar':'配对罐子', 'Name this jar':'为罐子命名', 'Jar connected':'罐子已连接',
+  'Jar name':'罐子名称', 'Collection':'分类', 'Jar size':'罐子容量', 'Freshness alerts':'新鲜度提醒',
+  'Battery alerts':'电量提醒', 'Add this jar':'添加此罐子',
+  'Double press the button on each part':'分别双击盖子和底座上的按钮',
+  'Wi-Fi network':'Wi-Fi 网络', "2.4 GHz only. Existing credentials aren't erased until a new connection succeeds.":'仅支持 2.4GHz。新连接成功前不会清除已有的网络凭据。',
+  'Pair as a set':'配对为一组',
+  'Choose a collection next':'请选择所属分类', 'Found':'已发现',
+  // add collection
+  'Add a collection':'添加分类', 'Give the collection a name':'请为分类命名', 'added':'已添加',
+  'Name it. You can pair jars into it right after.':'先命名，随后即可配对罐子加入其中。',
+  'Collection name':'分类名称', 'Save collection':'保存分类',
+  // trends
+  'Trends':'趋势', 'Environment':'环境', 'Captures':'拍摄记录', 'Weight trend':'重量趋势', 'Weight g':'重量（克）',
+  'Temperature / humidity trend':'温度／湿度趋势', 'History detail':'历史详情', 'Humidity':'湿度',
+  'Updating…':'正在更新…', 'Up to date':'已是最新', 'Base firmware updated to v1.5.0':'底座固件已更新至 v1.5.0',
+  // jar settings sheet
+  "Choose what you'd like to do with this jar.":'请选择要执行的操作。',
+  'Tare and calibration':'去皮与校准', 'Firmware update':'固件更新',
+  // calibration
+  'Tare':'去皮', 'Empty jar weight':'空罐重量', 'Last tared':'上次去皮时间', 'Set to zero':'清零',
+  'Calibration':'校准', 'Jar type':'罐子类型', 'Last calibrated':'上次校准时间',
+  '500 ml single point':'500毫升单点校准', '5 L multi point':'5升多点校准',
+  'Single point uses one known weight. Multi point uses three or more across the range for higher accuracy on larger jars.':'单点校准使用一个已知重量。多点校准使用三个或以上不同重量，适合大容量罐子以获得更高精度。',
+  // firmware
+  'Base firmware':'底座固件', 'Lid firmware':'盖子固件', 'Installed':'当前版本', 'Available':'可用版本',
+  'Update base':'更新底座', 'Up to date':'已是最新',
+  'Keep the jar awake and charged during an update. Press the button once on the module before starting.':'更新期间请保持罐子唤醒并接通电源。开始前请先按一次模块上的按钮。',
+  // BLE provisioning
+  'Ready to scan nearby Smart Jar devices':'准备扫描附近的智能罐设备',
+  'Ensure devices are powered on and in BLE provisioning mode':'请确保设备已开机并处于蓝牙配网模式',
+  'Start scanning nearby devices':'开始扫描附近设备', 'Devices found':'已发现设备',
+  'Signal strong':'信号强', 'Confirm and continue':'确认并继续', 'Send and provision':'发送并配网',
+  'Provisioning device…':'正在配网…', 'Provisioned successfully':'配网成功',
+  'Keep the jar and phone close together until this finishes.':'完成前请让罐子和手机保持靠近。',
+  '2.4 GHz only. Credentials are sent to the device over this Bluetooth session.':'仅支持 2.4GHz。配网信息将通过本次蓝牙连接发送至设备。',
+  'Wi-Fi password':'Wi-Fi 密码', 'Provisioned successfully':'配网成功', 'Jar provisioned and online':'罐子已配网并上线',
+  'Scanning…':'正在扫描…',
+  'Scan':'扫描', 'Confirm':'确认', 'Provision':'配网',
+};
+
+let collections = [
+  {id:'kitchen', name:'Kitchen', icon:'kitchen'},
+  {id:'pantry', name:'Pantry', icon:'pantry'},
+  {id:'bakery', name:'Bakery', icon:'bakery'},
+];
+
+let jars = [
+  {id:'L5-001', name:'Sushi rice', col:'kitchen', pct:18, rem:72, cap:400, status:'low', last:'2h ago',
+   using:'~350 g / week', fresh:'Normal', lidBatt:82, lidDays:40, baseBatt:41, baseDays:4, gas:true, emoji:'🍚'},
+  {id:'M5-002', name:'Oats', col:'kitchen', pct:71, rem:284, cap:400, status:'live', last:'2h ago',
+   using:'~140 g / week', fresh:'Normal', lidBatt:88, lidDays:44, baseBatt:65, baseDays:6, gas:false, emoji:'🌾'},
+  {id:'M5-003', name:'Coffee beans', col:'kitchen', pct:88, rem:352, cap:400, status:'live', last:'2h ago',
+   using:'~245 g / week', fresh:'Normal', lidBatt:91, lidDays:46, baseBatt:70, baseDays:7, gas:false, emoji:'☕'},
+  {id:'M5-004', name:'Sea salt', col:'bakery', pct:null, rem:null, cap:400, status:'offline', last:'3 days ago',
+   using:'-', fresh:'-', lidBatt:null, lidDays:null, baseBatt:null, baseDays:null, gas:false, emoji:'🧂'},
+  {id:'M5-005', name:'White lentils', col:'pantry', pct:64, rem:256, cap:400, status:'live', last:'3h ago',
+   using:'~126 g / week', fresh:'Normal', lidBatt:76, lidDays:38, baseBatt:52, baseDays:5, gas:true, emoji:'🥣'},
+  {id:'M5-006', name:'Kidney beans', col:'pantry', pct:45, rem:180, cap:400, status:'live', last:'3h ago',
+   using:'~154 g / week', fresh:'Normal', lidBatt:80, lidDays:39, baseBatt:58, baseDays:6, gas:false, emoji:'🫘'},
+];
+
+const HOUR = 3600*1000, DAY = 24*HOUR, NOW = Date.now();
+function since(ts){
+  const diff = NOW - ts;
+  if(diff < HOUR) return Math.max(1,Math.round(diff/60000))+'m ago';
+  if(diff < DAY) return Math.round(diff/HOUR)+'hr ago';
+  const days = Math.round(diff/DAY);
+  if(days < 7) return days+' day'+(days===1?'':'s')+' ago';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+function relTime(s){
+  if(state.lang!=='zh' || !s) return s;
+  let m;
+  if(s==='just now') return '刚刚';
+  if(m = s.match(/^(\d+)m ago$/)) return m[1]+'分钟前';
+  if(m = s.match(/^(\d+)hr? ago$/)) return m[1]+'小时前';
+  if(m = s.match(/^(\d+) days? ago$/)) return m[1]+'天前';
+  return s;
+}
+function remainingText(j){
+  return state.lang==='zh' ? `${j.rem} / ${j.cap} g` : `${j.rem} g of ${j.cap} g`;
+}
+
+/* ---- deterministic mock history, so charts stay stable between renders ---- */
+function seededRand(seed){ let s = seed % 233280; return () => { s = (s*9301+49297) % 233280; return s/233280; }; }
+function buildJarHistory(j, seed){
+  const rand = seededRand(1000 + seed*137);
+  const weightHist = [];
+  let w = (j.cap||400) * 0.55;
+  for(let i=24; i>=0; i--){
+    if(rand() < 0.08) w = Math.min(j.cap||400, w + (j.cap||400)*(0.3+rand()*0.5));
+    else w = Math.max(0, w - rand()*6);
+    weightHist.push({t: NOW - i*3*HOUR, v: Math.round(w*10)/10});
+  }
+  const envHist = [];
+  let temp = 21 + rand()*3, hum = 40 + rand()*10;
+  for(let i=24; i>=0; i--){
+    temp += (rand()-0.5)*0.7; hum += (rand()-0.5)*2.2;
+    envHist.push({t: NOW - i*3*HOUR, temp: Math.round(temp*100)/100, hum: Math.round(Math.max(20,Math.min(70,hum))*100)/100,
+      batt: Math.max(20, (j.baseBatt||60) - Math.floor(i/4))});
+  }
+  const captureHist = [];
+  for(let i=6; i>=0; i--){
+    captureHist.push({t: NOW - i*5*HOUR, w:800, h:600, bytes: 140000 + Math.floor(rand()*160000)});
+  }
+  return {weightHist, envHist, captureHist};
+}
+function attachHistory(j, seed){ Object.assign(j, buildJarHistory(j, seed)); return j; }
+
+/* ---- last-capture photo colour, standing in for a real photo ---- */
+function jarPhotoColors(j){
+  let h = 0; for(const c of j.name) h = (h*31 + c.charCodeAt(0)) % 360;
+  return {a:`hsl(${h} 55% 30%)`, b:`hsl(${(h+40)%360} 60% 22%)`};
+}
+/* ---- placeholder photo, standing in for a real device capture ---- */
+/* ---- food-keyword placeholder photo, standing in for a real device capture ---- */
+function foodKeyword(name){
+  const n = (name||'').toLowerCase();
+  if(n.includes('sushi')||n.includes('rice')) return 'rice,grains,overhead';
+  if(n.includes('oat')) return 'oats,overhead';
+  if(n.includes('coffee')) return 'coffeebeans,overhead';
+  if(n.includes('salt')) return 'seasalt,overhead';
+  if(n.includes('lentil')) return 'lentils,overhead';
+  if(n.includes('kidney')||n.includes('bean')) return 'kidneybeans,beans,overhead';
+  if(n.includes('sugar')) return 'sugar,overhead';
+  if(n.includes('spice')) return 'spices,overhead';
+  return 'grains,pantry,overhead';
+}
+function hashSeed(str){ let h=0; for(const c of str) h=(h*31+c.charCodeAt(0))>>>0; return h%9999; }
+function jarPhotoUrl(j, w, h, variant){
+  const kw = foodKeyword(j.name);
+  const seed = hashSeed((j.id||'')+'-'+(variant||'0'));
+  return `https://loremflickr.com/${w||600}/${h||400}/${kw}?lock=${seed}`;
+}
+
+jars.forEach((j,i)=>attachHistory(j,i));
+
+let latestAlerts = [
+  {id:1, icon:'jars', variant:'lo', title:'Sushi rice is low', meta:'Kitchen · 18%', ts: NOW - 2*HOUR},
+  {id:2, icon:'battery', variant:'lo', title:'Base battery low', meta:'Kitchen · 11%', ts: NOW - 5*HOUR},
+  {id:3, icon:'offline', variant:'', title:'Sea salt has not reported', meta:'Bakery', ts: NOW - 3*DAY},
+];
+let allAlerts = [
+  {id:101, icon:'jars', title:'Coffee beans is low', meta:'Kitchen', result:'accepted', ts: NOW - 4*DAY, errType:null, note:null},
+  {id:102, icon:'gas', title:'White lentils smell off', meta:'Pantry', result:'reported', ts: NOW - 6*DAY, errType:'Freshness', note:'Container was freshly refilled, this was a false read'},
+  {id:103, icon:'battery', title:'Lid battery low', meta:'Kitchen', result:'accepted', ts: NOW - 10*DAY, errType:null, note:null},
+];
+
+/* ============ HELPERS ============ */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function round5(n){ return Math.round(n/5)*5; }
+function ringColor(pct){
+  if(pct===null) return '#5A6B87';
+  if(pct<25) return 'var(--amber)';
+  if(pct<50) return '#F0B94A';
+  return '#3ECF77';
+}
+function statusChip(j){
+  if(j.status==='offline') return `<span class="chip offline">${t('Offline')}</span>`;
+  if(j.status==='alert') return `<span class="chip alert">${t('Alert')}</span>`;
+  if(j.status==='low') return `<span class="chip low">${t('Low')}</span>`;
+  return `<span class="chip live">${t('Live')}</span>`;
+}
+function nav(screen){ state.screen = screen; render(); document.getElementById('app').scrollTop=0; }
+function openJar(id, origin){ state.activeJar = id; state.jarOrigin = origin||'home'; nav('jarDetail'); }
+function toggleCol(id){ state.expandedCol = state.expandedCol===id ? null : id; render(); }
+function toggleForm(key){ state.form[key] = !state.form[key]; render(); }
+function acceptAlert(id){
+  const a = latestAlerts.find(x=>x.id===id); if(!a) return;
+  latestAlerts = latestAlerts.filter(x=>x.id!==id);
+  allAlerts.unshift({id:200+id, icon:a.icon, title:a.title, meta:a.meta, result:'accepted', ts:Date.now(), errType:null, note:null});
+  toast('Marked as accepted'); render();
+}
+function finalizeReport(id){
+  const a = latestAlerts.find(x=>x.id===id); if(!a) return;
+  latestAlerts = latestAlerts.filter(x=>x.id!==id);
+  allAlerts.unshift({id:200+id, icon:a.icon, title:a.title, meta:a.meta, result:'reported', ts:Date.now(),
+    errType:modalState.errType, note:document.getElementById('errNote')?document.getElementById('errNote').value.trim():''});
+  closeModal();
+  toast('Reported. Thanks, this helps detection improve'); render();
+}
+
+/* ============ MODAL SYSTEM ============ */
+let modalState = {errType:'Weight', ingredients:['']};
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+function openModal(html){
+  document.getElementById('modalSheet').innerHTML = `<div class="modal-grab"></div>${html}`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function setErrType(t){ modalState.errType = t; openErrorModal.currentId && renderErrorModal(openErrorModal.currentId); }
+function openErrorModal(alertId){
+  openErrorModal.currentId = alertId;
+  modalState.errType = 'Weight';
+  renderErrorModal(alertId);
+}
+function renderErrorModal(alertId){
+  const a = latestAlerts.find(x=>x.id===alertId);
+  const types = ['Weight','Image','Freshness'];
+  openModal(`
+    <div class="modal-title">${t('Report an issue')}</div>
+    <div class="modal-sub">${a?('"'+a.title+'". '):''}${t('Tell us what went wrong so detection can improve.')}</div>
+    <div class="field"><label>${t('Error type')}</label></div>
+    <div class="errtype">
+      ${types.map(ty=>`<div class="${modalState.errType===ty?'on':''}" onclick="setErrType('${ty}')">${t(ty)}</div>`).join('')}
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>${t('Details (optional)')}</label>
+      <textarea id="errNote" placeholder="e.g. Jar was full, app showed low"></textarea>
+    </div>
+    <button class="btn primary" onclick="finalizeReport(${alertId})">${t('Submit report')}</button>
+    <button class="btn ghost" style="margin-top:8px" onclick="closeModal()">${t('Cancel')}</button>
+  `);
+}
+
+/* ============ COLLECTIONS ============
+   Add Collection asks only for a name, then the new collection
+   appears expanded on Home with a prompt to pair a jar into it.
+   Pairing a jar always goes through the same BLE + Wi-Fi steps
+   as adding a jar anywhere else, nothing is just typed as a label. */
+let colJarForm = {name:'', size:'500 ml', threshold:30, fresh:true, batt:true};
+
+function openAddCollectionModal(){
+  openModal(`
+    <div class="modal-title">${t('Add a collection')}</div>
+    <div class="modal-sub">${t('Name it. You can pair jars into it right after.')}</div>
+    <div class="field" style="margin-bottom:16px">
+      <label>${t('Collection name')}</label>
+      <input id="newColName" placeholder="e.g. Garage, Office pantry">
+    </div>
+    <button class="btn primary" onclick="saveNewCollection()">${t('Save collection')}</button>
+    <button class="btn ghost" style="margin-top:8px" onclick="closeModal()">${t('Cancel')}</button>
+  `);
+  setTimeout(()=>{ const el=document.getElementById('newColName'); if(el) el.focus(); }, 50);
+}
+function saveNewCollection(){
+  const name = document.getElementById('newColName').value.trim();
+  if(!name){ toast(t('Give the collection a name')); return; }
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '-' + Math.floor(Math.random()*900+100);
+  collections.push({id, name, icon:'box'});
+  state.expandedCol = id;
+  closeModal();
+  toast(`${name} ${t('added')}`);
+  render();
+}
+
+function openAddJarChooser(colId){
+  state.pairingForCol = colId;
+  openModal(`
+    <div class="modal-title">${t('Add a jar')}</div>
+    <div class="modal-sub">${t("Choose how you'd like to add it.")}</div>
+    <div class="f row-tap" onclick="closeModal(); colJarForm={name:'',size:'500 ml',threshold:30,fresh:true,batt:true}; nav('colPair')">
+      <div class="k">${ic.bt} ${t('Pair a new jar')}</div><span class="chev">›</span></div>
+    <div class="f row-tap" style="border-bottom:none; padding-top:11px; align-items:flex-start" onclick="closeModal(); nav('ble')">
+      <div><div class="k">${ic.wifi} ${t('BLE provisioning')}</div>
+        <div class="mt" style="margin:2px 0 0 22px">${t('Reconnect an existing jar')}</div></div>
+      <span class="chev">›</span></div>
+  `);
+}
+
+function screenColPair(){
+  const col = collections.find(c=>c.id===state.pairingForCol);
+  return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('home')">${ic.back}</div>
+    <h1>${t('Pair a jar')}</h1>
+    <div class="status">${col?col.name:t('Choose a collection next')}</div>
+  </div>
+  <div class="body">
+    <div class="card">
+      <h3>${ic.bt} ${t('Double press the button on each part')}</h3>
+      <div class="f"><div class="k">${t('Lid module')}</div><div class="v" style="color:var(--green)">${t('Found')}</div></div>
+      <div class="f"><div class="k">${t('Base')}</div><div class="v" style="color:var(--green)">${t('Found')}</div></div>
+    </div>
+    <div class="card">
+      <div class="field"><label>${t('Wi-Fi network')}</label>
+        <select><option>Home 2.4G</option><option>Kitchen-IoT</option></select></div>
+      <div class="field" style="margin-bottom:0"><label>${t('Password')}</label>
+        <input type="password" placeholder="${t('Wi-Fi password')}"></div>
+    </div>
+    <div class="hint">${ic.wifi} ${t("2.4 GHz only. Existing credentials aren't erased until a new connection succeeds.")}</div>
+    <button class="btn primary" onclick="nav('colJarName')">${t('Pair as a set')}</button>
+  </div>`;
+}
+
+function screenColJarName(){
+  const f = colJarForm;
+  return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('colPair')">${ic.back}</div>
+    <h1>${t('Name this jar')}</h1>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div style="text-align:center; padding:6px 0 14px">
+        <div style="width:38px;height:38px;border-radius:50%;border:2.5px solid var(--green); margin:0 auto 8px;
+          display:flex;align-items:center;justify-content:center; color:var(--green)">${ic.check}</div>
+        <div style="font-weight:700; font-size:14px">${t('Jar connected')}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="field"><label>${t('Jar name')}</label>
+        <input id="colJarName" placeholder="e.g. Sushi rice" value="${f.name}"></div>
+      <div class="field" style="margin-bottom:0"><label>${t('Collection')}</label>
+        <select id="colJarCol">${collections.map(c=>`<option value="${c.id}" ${state.pairingForCol===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div>
+    </div>
+    <div class="card">
+      <div class="field"><label>${t('Jar size')}</label>
+        <select id="colJarSize"><option ${f.size==='500 ml'?'selected':''}>500 ml</option><option ${f.size==='5 L'?'selected':''}>5 L</option></select></div>
+      <div class="f"><div class="k">${t('Alert me below')}</div><div class="v">${f.threshold}%</div></div>
+      <div class="f"><div class="k">${t('Freshness alerts')}</div>
+        <div class="toggle ${f.fresh?'on':''}" onclick="colJarForm.fresh=!colJarForm.fresh; render()"><div class="knob"></div></div></div>
+      <div class="f"><div class="k">${t('Battery alerts')}</div>
+        <div class="toggle ${f.batt?'on':''}" onclick="colJarForm.batt=!colJarForm.batt; render()"><div class="knob"></div></div></div>
+    </div>
+    <button class="btn primary" onclick="addJarToCollection()">${t('Add this jar')}</button>
+  </div>`;
+}
+function addJarToCollection(){
+  const name = document.getElementById('colJarName').value.trim() || 'New jar';
+  const size = document.getElementById('colJarSize').value;
+  const colId = document.getElementById('colJarCol').value;
+  const newJar = attachHistory({id:'L5-'+Math.floor(100+Math.random()*899), name, col:colId,
+    pct:100, rem: size==='5 L'?5000:400, cap: size==='5 L'?5000:400, size,
+    status:'live', last:'just now', using:'-', fresh:'Normal',
+    lidBatt:100, lidDays:45, baseBatt:100, baseDays:9, gas:false, emoji:'🫙'}, jars.length);
+  jars.push(newJar);
+  state.expandedCol = colId;
+  toast(`${name} ${t('added')}`);
+  nav('home');
+}
+
+/* ============ JAR SETTINGS (gear icon) ============ */
+function openJarSettings(jarId){
+  const j = jars.find(x=>x.id===jarId); if(!j) return;
+  openModal(`
+    <div class="modal-title">${j.name}</div>
+    <div class="modal-sub">${j.id}. ${t("Choose what you'd like to do with this jar.")}</div>
+    <div class="f row-tap" onclick="closeModal(); state.activeJar='${jarId}'; nav('calib')">
+      <div class="k">${ic.calib} ${t('Tare and calibration')}</div><span class="chev">›</span></div>
+    <div class="f row-tap" style="border-bottom:none; padding-top:11px" onclick="closeModal(); state.activeJar='${jarId}'; nav('firmware')">
+      <div class="k">${ic.firmware} ${t('Firmware update')}</div><span class="chev">›</span></div>
+  `);
+}
+
+/* ============ SCREENS ============ */
+function screenLogin(){
+  return `
+  <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:32px 28px;
+    background:linear-gradient(160deg, var(--navy-mid) 0%, var(--navy-dark) 65%, #0E1A30 100%);">
+    <div style="width:100%; max-width:280px; text-align:center; margin-bottom:34px">
+      <h1 style="color:#fff; font-family:'Poppins',sans-serif; font-size:21px; font-weight:700; letter-spacing:-.01em">${t('Smart Jar')}</h1>
+      <div style="justify-content:center; margin-top:6px; color:#D7E1F2; font-size:13px; opacity:.85">${t("Know what's in every jar, always")}</div>
+    </div>
+    <div style="width:100%; max-width:280px">
+      <div class="field on-dark"><label>${t('Email')}</label>
+        <input placeholder="you@email.com" value="vikrant@analogydesign.co"></div>
+      <div class="field on-dark" style="margin-bottom:0"><label>${t('Password')}</label>
+        <input type="password" value="••••••••"></div>
+    </div>
+    <div style="width:100%; max-width:280px">
+      <button class="btn primary" onclick="nav('home')" style="margin-top:20px">${t('Log in')}</button>
+      <button class="btn ghost-dark" style="margin-top:10px" onclick="toast('Demo build. Use Log in')">${t('Create account')}</button>
+    </div>
+  </div>`;
+}
+
+function jarMiniRow(j, origin){
+  return `<div class="jarrow row-tap" onclick="openJar('${j.id}','${origin}')">
+      <div class="info"><div class="nm">${j.name}</div><div class="mt">${t('Last active')} ${relTime(j.last)}</div></div>
+      ${statusChip(j)}
+    </div>`;
+}
+
+function screenHome(){
+  const total = jars.length;
+  const low = jars.filter(j=>j.status==='low'||j.status==='offline').length;
+  const colCard = c => {
+    const cj = jars.filter(j=>j.col===c.id);
+    const worst = cj.some(j=>j.status==='offline') ? 'offline' :
+      cj.some(j=>j.status==='alert') ? 'alert' :
+      cj.some(j=>j.status==='low') ? 'low' : 'live';
+    const chip = worst==='offline' ? `<span class="chip offline">${t('Offline')}</span>` :
+      worst==='alert' ? `<span class="chip alert">${t('Alert')}</span>` :
+      worst==='low' ? `<span class="chip low">${cj.filter(j=>j.status==='low').length} ${t('Low')}</span>` :
+      `<span class="chip live">${t('Live')}</span>`;
+    const open = state.expandedCol===c.id;
+    return `<div class="col-card">
+      <div class="col-head row-tap" onclick="toggleCol('${c.id}')">
+        <div class="thumb" style="background:var(--blue-bg); color:var(--blue)">${ic[c.icon]||c.icon}</div>
+        <div style="flex:1"><div class="nm">${c.name}</div><div class="mt">${cj.length} ${t(cj.length!==1?'jars':'jar')}</div></div>
+        ${chip}
+        <div class="col-caret ${open?'open':''}">${ic.caret}</div>
+      </div>
+      ${open?`<div class="col-jars">
+        <div class="jarlist">${cj.map(j=>jarMiniRow(j,'home')).join('')}</div>
+        <div class="ghost-row" onclick="openAddJarChooser('${c.id}')">${ic.plus} ${t('Add a jar')}</div>
+      </div>`:''}
+    </div>`;
+  };
+  return `
+  <div class="banner">
+    <div class="backarrow" style="visibility:hidden">${ic.back}</div>
+    <h1>${t('My Smart Inventory')}</h1>
+    <div class="status"><span class="dot"></span>${collections.length} ${t('collections')} · ${total} ${t('jars')}${low?` · ${low} ${t('need attention')}`:''}</div>
+  </div>
+  <div class="body">
+    <div class="seg" style="margin-bottom:12px">
+      <div class="${state.homeView==='collections'?'on':''}" onclick="state.homeView='collections'; render()">${t('Collections')}</div>
+      <div class="${state.homeView==='all'?'on':''}" onclick="state.homeView='all'; render()">${t('All jars')}</div>
+    </div>
+    ${state.homeView==='all' ? `
+      <div class="card">
+        <div class="jarlist">${jars.map(j=>jarMiniRow(j,'home')).join('')}</div>
+      </div>
+      <div class="ghost-row" style="margin-top:12px" onclick="openAddJarChooser(null)">${ic.plus} ${t('Add a jar')}</div>
+    ` : `
+      ${collections.map(colCard).join('')}
+      <div class="ghost-row" onclick="openAddCollectionModal()">${ic.plus} ${t('Add collection')}</div>
+    `}
+  </div>`;
+}
+
+function screenJarDetail(){
+  const j = jars.find(x=>x.id===state.activeJar) || jars[0];
+  const offline = j.status==='offline';
+  const pctR = j.pct!==null ? round5(j.pct) : null;
+  return `
+  <div class="banner">
+    <div class="row" style="align-items:center">
+      <div class="backarrow" style="margin-bottom:0" onclick="nav('home')">${ic.back}</div>
+      <div style="display:flex; gap:8px; align-items:center; margin-right:40px">
+        ${!offline?`<div class="backarrow" style="margin-bottom:0" onclick="openJarSettings('${j.id}')">${ic.gear}</div>`:''}
+        <div class="backarrow" style="margin-bottom:0" onclick="state.activeJar='${j.id}'; trendsTab='weight'; nav('trends')">${ic.clock}</div>
+      </div>
+    </div>
+    <h1 style="margin-top:12px">${j.name}</h1>
+    <div class="status"><span class="dot ${offline?'off':''}"></span>${offline?t('Offline'):t('Live')} · ${relTime(j.last)}</div>
+  </div>
+  <div class="body">
+    <div class="hero">
+      <div class="ring">
+        <div class="track" style="background:conic-gradient(${ringColor(pctR)} ${offline?0:pctR*3.6}deg, rgba(255,255,255,.12) 0deg)"></div>
+        <div class="inner">
+          <div class="pct">${pctR!==null? '~'+pctR+'%' : '-'}</div>
+          <div class="amt">${j.pct!==null? j.rem+' / '+j.cap+' g' : t('No data')}</div>
+        </div>
+      </div>
+      <h2>${j.name}</h2>
+      <div class="sub">${offline? t('Last active')+' '+relTime(j.last) : t('Last measured')+' · '+relTime(j.last)}</div>
+      ${j.status==='low'?`<div class="chip low">${t('Low, below your alert threshold')}</div>`:''}
+      ${offline?`<div class="chip offline">${t('Offline, check power and Wi-Fi')}</div>`:''}
+    </div>
+
+    <div class="card">
+      <div class="f"><div class="k">${ic.tag} ${t('Contents')}</div><div class="v">${j.name}</div></div>
+      <div class="f"><div class="k">${t('Jar ID')}</div><div class="v mute">${j.id}</div></div>
+      <div class="f"><div class="k">${ic.scale} ${t('Remaining')}</div><div class="v">${j.pct!==null? remainingText(j):'-'}</div></div>
+      <div class="f"><div class="k">${ic.clock} ${t('Last measured')}</div><div class="v">${relTime(j.last)}</div></div>
+      <div class="f"><div class="k">${t('Usage trend')}</div><div class="v">${j.using}</div></div>
+      ${j.gas?`<div class="f"><div class="k">${ic.gas} ${t('Freshness')}</div><div class="v">${j.fresh==='Normal'?t('Normal'):j.fresh}</div></div>`:''}
+    </div>
+
+    <div class="card">
+      <h3>${ic.battery} ${t('Battery')}</h3>
+      <div class="f"><div class="k">${t('Lid module')}</div>
+        <div class="v">${j.lidBatt!==null? j.lidBatt+'% - ~'+j.lidDays+' '+t('days'):'-'}</div></div>
+      <div class="f"><div class="k">${t('Base')}</div>
+        <div class="v">${j.baseBatt!==null? j.baseBatt+'% - ~'+j.baseDays+' '+t('days'):'-'}</div></div>
+    </div>
+
+    <button class="btn primary" style="text-transform:uppercase; letter-spacing:.03em" onclick="toast('Queued. Press the button on the jar for an instant reading')">${t('Measure now')}</button>
+  </div>`;
+}
+
+function screenAlerts(){
+  const list = state.alertsTab==='latest' ? latestAlerts : allAlerts;
+  const row = a => `
+    <div class="al" style="padding:11px 0; border-bottom:1px solid var(--fill); ${state.alertsTab==='all'?'opacity:.58':''}">
+      <div class="aicon ${a.variant==='lo'?'lo':''}">${ic[a.icon]}</div>
+      <div class="txt"><div class="ti">${a.title}</div>
+        <div class="mt">${a.meta} · ${relTime(since(a.ts))}${a.result?' · '+(a.result==='accepted'?t('accepted'):t('reported')+(a.errType?' ('+t(a.errType)+')':'')):''}</div></div>
+      ${state.alertsTab==='latest'?`
+      <div class="acts">
+        <div class="act ok" onclick="acceptAlert(${a.id})">${ic.check}</div>
+        <div class="act rep" onclick="openErrorModal(${a.id})">${ic.flag}</div>
+      </div>`:`<div class="act ${a.result==='accepted'?'ok':'rep'}">${a.result==='accepted'?ic.check:ic.flag}</div>`}
+    </div>`;
+  return `
+  <div class="banner">
+    <div class="backarrow" style="visibility:hidden">${ic.back}</div>
+    <h1>${t('Alerts')}</h1>
+    <div class="status"><span class="dot"></span>${latestAlerts.length} ${t('new')}</div>
+  </div>
+  <div class="body">
+    <div class="seg">
+      <div class="${state.alertsTab==='latest'?'on':''}" onclick="state.alertsTab='latest';render()">${t('Latest alerts')}</div>
+      <div class="${state.alertsTab==='all'?'on':''}" onclick="state.alertsTab='all';render()">${t('All alerts')}</div>
+    </div>
+    ${list.length===0?`<div class="card empty"><div class="ic">${ic.bell}</div><h4>${t('All clear')}</h4>
+      <p>${t('No alerts need your attention right now.')}</p></div>`:
+    `<div class="card">${list.map(row).join('')}</div>`}
+  </div>`;
+}
+
+function screenMore(){
+  const item = (icon, label, sub, onclick) => `
+    <div class="f row-tap" onclick="${onclick}">
+      <div class="k">${ic[icon]} ${t(label)}${sub?`<span style="color:var(--mute); font-weight:400"> · ${sub}</span>`:''}</div>
+      <span class="chev">›</span>
+    </div>`;
+  return `
+  <div class="banner">
+    <div class="backarrow" style="visibility:hidden">${ic.back}</div>
+    <h1>${t('Dashboard')}</h1>
+    <div class="status"><span class="dot"></span>${t('Vikrant Mishra')}</div>
+  </div>
+  <div class="body">
+    <div class="card">
+      ${item('user','My account', null, "toast('Account settings coming soon')")}
+      ${item('jars','Manage jars', jars.length+' '+t('total'), "state.homeView='all'; nav('home')")}
+      ${item('bell','Notification alerts', null, "nav('notifAlerts')")}
+    </div>
+    <div class="card">
+      <div class="f"><div class="k">${t('App version')}</div><div class="v mute">1.0.0</div></div>
+      ${item('help','Help', null, "toast('Support coming soon')")}
+      ${item('logout','Log out', null, "nav('login')")}
+    </div>
+  </div>`;
+}
+
+function screenCalib(){
+  const j = jars.find(x=>x.id===state.activeJar) || jars[0];
+  const size = j.size || '500 ml';
+  return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('jarDetail')">${ic.back}</div>
+    <h1>${t('Tare and calibration')}</h1>
+    <div class="status">${j.name}</div>
+  </div>
+  <div class="body">
+    <div class="card">
+      <h3>${ic.scale} ${t('Tare')}</h3>
+      <div class="f"><div class="k">${t('Empty jar weight')}</div><div class="v">86 g</div></div>
+      <div class="f"><div class="k">${t('Last tared')}</div><div class="v mute">14 Aug 2026</div></div>
+      <button class="btn ghost" style="margin-top:10px" onclick="toast('Tared to zero')">${t('Set to zero')}</button>
+    </div>
+    <div class="card">
+      <h3>${ic.calib} ${t('Calibration')}</h3>
+      <div class="f"><div class="k">${t('Jar type')}</div><div class="v">${size}</div></div>
+      <div class="f row-tap" onclick="toast('Opening 500 ml single-point calibration')">
+        <div class="k">${t('500 ml single point')} <span style="color:var(--mute); font-weight:400">· 3 kg cell</span></div>
+        <span class="chev">›</span></div>
+      <div class="f row-tap" onclick="toast('Opening 5 L multi-point calibration')">
+        <div class="k">${t('5 L multi point')} <span style="color:var(--mute); font-weight:400">· 5 kg cell</span></div>
+        <span class="chev">›</span></div>
+      <div class="f"><div class="k">${t('Last calibrated')}</div><div class="v mute">10 Aug 2026</div></div>
+    </div>
+    <div class="hint">${t('Single point uses one known weight. Multi point uses three or more across the range for higher accuracy on larger jars.')}</div>
+  </div>`;
+}
+
+function screenFirmware(){
+  const j = jars.find(x=>x.id===state.activeJar) || jars[0];
+  return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('jarDetail')">${ic.back}</div>
+    <h1>${t('Firmware update')}</h1>
+    <div class="status">${j.name}</div>
+  </div>
+  <div class="body">
+    <div class="card">
+      <h3>${t('Base firmware')}</h3>
+      <div class="f"><div class="k">${t('Installed')}</div><div class="v">v1.4.2</div></div>
+      <div class="f"><div class="k">${t('Available')}</div><div class="v" style="color:var(--blue)">v1.5.0</div></div>
+      <button class="btn primary" style="margin-top:10px" id="btnBase" onclick="doUpdate('btnBase')">${t('Update base')}</button>
+    </div>
+    <div class="card">
+      <h3>${t('Lid firmware')}</h3>
+      <div class="f"><div class="k">${t('Installed')}</div><div class="v">v1.5.0</div></div>
+      <div class="f"><div class="k">${t('Available')}</div><div class="v mute">${t('Up to date')}</div></div>
+      <button class="btn ghost" disabled style="opacity:.5">${t('Up to date')}</button>
+    </div>
+    <div class="hint">${t('Keep the jar awake and charged during an update. Press the button once on the module before starting.')}</div>
+  </div>`;
+}
+/* ============ TRENDS / HISTORY ============ */
+let trendsTab = 'weight';
+function lineChart(series, opts){
+  opts = opts || {};
+  const W=310, H=150, PL=40, PR=6, PT=8, PB=20;
+  const allVals = series.flatMap(s=>s.data.map(d=>d.v));
+  let min = Math.min(...allVals), max = Math.max(...allVals);
+  if(min===max){min-=1; max+=1;}
+  const pad = (max-min)*0.12; min-=pad; max+=pad;
+  const n = series[0].data.length;
+  const x = i => PL + (W-PL-PR) * (n<=1?0:i/(n-1));
+  const y = v => PT + (H-PT-PB) * (1 - (v-min)/(max-min));
+  const steps = [max, min+(max-min)*0.66, min+(max-min)*0.33, min];
+  const grid = steps.map(v=>`<line x1="${PL}" x2="${W-PR}" y1="${y(v)}" y2="${y(v)}" stroke="#E5E9EF" stroke-width="1"/>
+    <text x="${PL-6}" y="${y(v)+3}" font-size="9" fill="#9CA3AF" text-anchor="end" font-family="Inter">${Math.round(v*10)/10}</text>`).join('');
+  const paths = series.map(s=>{
+    const pts = s.data.map((d,i)=>`${x(i)},${y(d.v)}`).join(' ');
+    const dots = s.data.map((d,i)=>`<circle cx="${x(i)}" cy="${y(d.v)}" r="2" fill="${s.color}"/>`).join('');
+    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2"/>${dots}`;
+  }).join('');
+  const tIdx = [0, Math.floor((n-1)/2), n-1];
+  const xt = tIdx.map(i=>`<text x="${x(i)}" y="${H-4}" font-size="9" fill="#9CA3AF" text-anchor="middle" font-family="Inter">${
+    new Date(series[0].data[i].t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%; height:auto; display:block">${grid}${paths}${xt}</svg>`;
+}
+
+function screenTrends(){
+  const j = jars.find(x=>x.id===state.activeJar) || jars[0];
+  return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('jarDetail')">${ic.back}</div>
+    <h1>${t('Trends')}</h1>
+    <div class="status">${j.name}</div>
+  </div>
+  <div class="body">
+    <div class="seg">
+      <div class="${trendsTab==='weight'?'on':''}" onclick="trendsTab='weight'; render()">${t('Weight')}</div>
+      <div class="${trendsTab==='env'?'on':''}" onclick="trendsTab='env'; render()">${t('Environment')}</div>
+      <div class="${trendsTab==='cap'?'on':''}" onclick="trendsTab='cap'; render()">${t('Captures')}</div>
+    </div>
+    ${trendsTab==='weight'?trendsWeight(j):trendsTab==='env'?trendsEnv(j):trendsCaptures(j)}
+  </div>`;
+}
+
+function trendsWeight(j){
+  const rows = [...j.weightHist].reverse();
+  const items = rows.map((d,i)=>{
+    const prev = rows[i+1];
+    let delta = '';
+    if(prev){
+      const diff = Math.round((d.v-prev.v)*10)/10;
+      if(diff>0) delta = `<span class="tl-delta up">↑ +${diff}g</span>`;
+      else if(diff<0) delta = `<span class="tl-delta down">↓ ${diff}g</span>`;
+    }
+    return `<div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div>
+      <div class="tl-time">${new Date(d.t).toLocaleTimeString('en-GB')}</div>
+      <div class="tl-val">${d.v} g ${delta}</div></div>`;
+  }).join('');
+  return `
+    <div class="chartwrap">
+      <h3 style="margin-bottom:2px">${t('Weight trend')}</h3>
+      ${lineChart([{color:'#1B7F5C', data:j.weightHist}])}
+      <div class="chart-legend"><span><i style="background:#1B7F5C"></i>${t('Weight g')}</span></div>
+    </div>
+    <div class="card"><h3>${ic.clock} ${t('History detail')}</h3><div class="tl">${items}</div></div>`;
+}
+
+function trendsEnv(j){
+  const rows = [...j.envHist].reverse();
+  const items = rows.map(d=>`<div class="tl-item"><div class="tl-dot" style="background:#D97706"></div><div class="tl-line"></div>
+      <div class="tl-time">${new Date(d.t).toLocaleTimeString('en-GB')}</div>
+      <div class="tl-val">${d.temp}°C</div>
+      <div class="tl-sub">${t('Humidity')} ${d.hum}% · ${t('Battery')} ${d.batt}%</div></div>`).join('');
+  return `
+    <div class="chartwrap">
+      <h3 style="margin-bottom:2px">${t('Temperature / humidity trend')}</h3>
+      ${lineChart([
+        {color:'#1B7F5C', data:j.envHist.map(d=>({t:d.t, v:d.temp}))},
+        {color:'#D97706', data:j.envHist.map(d=>({t:d.t, v:d.hum}))}
+      ])}
+      <div class="chart-legend"><span><i style="background:#1B7F5C"></i>Temp °C</span><span><i style="background:#D97706"></i>${t('Humidity')} %</span></div>
+    </div>
+    <div class="card"><h3>${ic.clock} ${t('History detail')}</h3><div class="tl">${items}</div></div>`;
+}
+
+function trendsCaptures(j){
+  const rows = [...j.captureHist].reverse();
+  const items = rows.map((d,i)=>`<div class="tl-item"><div class="tl-dot"></div><div class="tl-line"></div>
+      <div class="photo-block" style="background-image:url('${jarPhotoUrl(j, 500, 300, i)}'); background-size:cover; background-position:center"></div>
+      <div class="tl-time">${new Date(d.t).toLocaleTimeString('en-GB')}</div>
+      <div class="tl-sub">${d.w}x${d.h} · ${d.bytes.toLocaleString()} bytes</div></div>`).join('');
+  return `<div class="card"><h3>${ic.camera} ${t('History detail')}</h3><div class="tl">${items}</div></div>`;
+}
+
+function doUpdate(id){
+  const b = document.getElementById(id);
+  b.textContent=t('Updating…'); b.disabled=true; b.style.opacity='.7';
+  setTimeout(()=>{ b.textContent=t('Up to date'); b.classList.remove('primary'); b.classList.add('ghost'); toast(t('Base firmware updated to v1.5.0')); }, 1600);
+}
+
+let bleStep = 1;
+const bleSteps = ['Scan','Confirm','Wi-Fi','Provision'];
+function bleStepBar(){
+  return `<div class="stepbar">
+    ${bleSteps.map((lbl,i)=>{
+      const n=i+1; const st = n<bleStep?'done':n===bleStep?'on':'';
+      return `<div class="sb-node">
+          <div class="sb-circle ${st}">${n<bleStep?'✓':n}</div>
+          <div class="sb-lbl ${n===bleStep?'on':''}">${t(lbl)}</div>
+        </div>${i<bleSteps.length-1?'<div class="sb-line"></div>':''}`;
+    }).join('')}
+  </div>`;
+}
+function screenNotifAlerts(){
+  const lp = alertPrefs.lowStock;
+  const pcts = [10,20,30,40,50];
+  return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('more')">${ic.back}</div>
+    <h1>${t('Notification alerts')}</h1>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="f" style="border-bottom:none; padding-bottom:0">
+        <div><div class="k" style="font-weight:600; color:var(--ink)">${ic.gas} ${t('Freshness alert')}</div>
+          <div class="mt" style="margin-top:2px">${t('Tell me when the food may not be fresh')}</div></div>
+        <div class="toggle ${alertPrefs.freshness?'on':''}" onclick="alertPrefs.freshness=!alertPrefs.freshness; render()"><div class="knob"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="f" style="border-bottom:none; padding-bottom:0">
+        <div><div class="k" style="font-weight:600; color:var(--ink)">${ic.brokenlink} ${t('Connectivity error')}</div>
+          <div class="mt" style="margin-top:2px">${t('Tell me when a jar stops reporting')}</div></div>
+        <div class="toggle ${alertPrefs.connectivity?'on':''}" onclick="alertPrefs.connectivity=!alertPrefs.connectivity; render()"><div class="knob"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="f" style="${lp.enabled?'':'border-bottom:none; padding-bottom:0'}">
+        <div><div class="k" style="font-weight:600; color:var(--ink)">${ic.scale} ${t('Low stock')}</div>
+          <div class="mt" style="margin-top:2px">${t('Tell me when a jar runs low')}</div></div>
+        <div class="toggle ${lp.enabled?'on':''}" onclick="alertPrefs.lowStock.enabled=!alertPrefs.lowStock.enabled; render()"><div class="knob"></div></div>
+      </div>
+      ${lp.enabled?`
+      <div class="f" style="border-bottom:none; padding-bottom:0; padding-top:11px">
+        <div class="k">${t('Alert me below')}</div>
+      </div>
+      <div style="display:flex; gap:6px; margin-top:8px">
+        ${pcts.map(p=>`<div class="pctpill ${lp.threshold===p?'on':''}" onclick="alertPrefs.lowStock.threshold=${p}; render()">${p}%</div>`).join('')}
+      </div>`:''}
+    </div>
+    <div class="hint">${t("These apply to every jar by default. Any jar can still be set individually when it's added.")}</div>
+  </div>`;
+}
+
+function screenBLE(){
+  if(bleStep===1) return `
+  <div class="banner">
+    <div class="backarrow" onclick="nav('more')">${ic.back}</div>
+    <h1>${t('BLE Provisioning')}</h1>
+  </div>
+  <div class="body">
+    ${bleStepBar()}
+    <div class="scan-target">
+      <div class="pulse"></div>
+      <div class="center">${ic.radar}</div>
+    </div>
+    <div style="text-align:center">
+      <h3 class="display" style="font-size:16px; margin-bottom:6px">${t('Ready to scan nearby Smart Jar devices')}</h3>
+      <div class="hint" style="margin-top:0">${t('Ensure devices are powered on and in BLE provisioning mode')}</div>
+    </div>
+    <button class="btn primary" onclick="startBleScan()">${ic.search} ${t('Start scanning nearby devices')}</button>
+  </div>`;
+
+  if(bleStep===2) return `
+  <div class="banner">
+    <div class="backarrow" onclick="bleStep=1;render()">${ic.back}</div>
+    <h1>${t('BLE Provisioning')}</h1>
+  </div>
+  <div class="body">
+    ${bleStepBar()}
+    <div class="card">
+      <h3>${t('Devices found')}</h3>
+      <div class="foundrow"><div class="fic">${ic.jars}</div>
+        <div class="txt" style="flex:1"><div class="ti">Lid module L5-014</div><div class="mt">${t('Signal strong')}</div></div>
+        <div style="color:var(--green)">${ic.check}</div></div>
+      <div class="foundrow"><div class="fic">${ic.grid}</div>
+        <div class="txt" style="flex:1"><div class="ti">Base B5-014</div><div class="mt">${t('Signal strong')}</div></div>
+        <div style="color:var(--green)">${ic.check}</div></div>
+    </div>
+    <button class="btn primary" onclick="bleStep=3;render()">${t('Confirm and continue')}</button>
+  </div>`;
+
+  if(bleStep===3) return `
+  <div class="banner">
+    <div class="backarrow" onclick="bleStep=2;render()">${ic.back}</div>
+    <h1>${t('BLE Provisioning')}</h1>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="field"><label>${t('Wi-Fi network')}</label>
+        <select><option>Home 2.4G</option><option>Kitchen-IoT</option></select></div>
+      <div class="field" style="margin-bottom:0"><label>${t('Password')}</label>
+        <input type="password" placeholder="${t('Wi-Fi password')}"></div>
+    </div>
+    <div class="hint">${ic.wifi} ${t('2.4 GHz only. Credentials are sent to the device over this Bluetooth session.')}</div>
+    <button class="btn primary" onclick="bleStep=4;render();setTimeout(finishProvision,1800)">${t('Send and provision')}</button>
+  </div>`;
+
+  return `
+  <div class="banner">
+    <h1>${t('BLE Provisioning')}</h1>
+  </div>
+  <div class="body">
+    ${bleStepBar()}
+    <div class="card" style="text-align:center; padding:28px 16px">
+      <div id="provSpin" style="width:52px;height:52px;border-radius:50%;border:4px solid var(--rule);
+        border-top-color:var(--blue); margin:0 auto 16px; animation:spin 1s linear infinite"></div>
+      <div id="provStatus" style="font-weight:700; font-size:14.5px">${t('Provisioning device…')}</div>
+      <div class="hint">${t('Keep the jar and phone close together until this finishes.')}</div>
+    </div>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+}
+function startBleScan(){
+  toast(t('Scanning…'));
+  setTimeout(()=>{ bleStep=2; render(); }, 1400);
+}
+function finishProvision(){
+  const el = document.getElementById('provSpin'); const st = document.getElementById('provStatus');
+  if(!el) return;
+  el.style.borderTopColor = 'var(--green)'; el.style.animation='none';
+  el.innerHTML = `<div style="color:var(--green); display:flex; align-items:center; justify-content:center; height:100%">${ic.check}</div>`;
+  st.textContent = t('Provisioned successfully');
+  toast(t('Jar provisioned and online'));
+  setTimeout(()=>{ bleStep=1; nav('more'); }, 1600);
+}
+
+
+/* ============ RENDER ============ */
+const screens = {
+  login: screenLogin, home: screenHome, jarDetail: screenJarDetail,
+  alerts: screenAlerts, more: screenMore, calib: screenCalib, firmware: screenFirmware,
+  ble: screenBLE, colPair: screenColPair, colJarName: screenColJarName,
+  trends: screenTrends, notifAlerts: screenNotifAlerts,
+};
+function renderTabs(){
+  if(state.screen==='login'){ document.getElementById('tabs').style.display='none'; return; }
+  document.getElementById('tabs').style.display='flex';
+  const active = ['jarDetail','calib','firmware','trends','colPair','colJarName'].includes(state.screen) ? 'home' :
+    ['ble','notifAlerts'].includes(state.screen) ? 'more' : state.screen;
+  const tabs = [
+    {k:'home', icon:'home'},
+    {k:'alerts', icon:'bell', badge:latestAlerts.length},
+    {k:'more', icon:'more'},
+  ];
+  document.getElementById('tabs').innerHTML = tabs.map(t=>`
+    <div class="tab ${active===t.k?'on':''}" onclick="nav('${t.k}')">
+      ${t.badge?`<span class="badge">${t.badge}</span>`:''}
+      ${ic[t.icon]}
+    </div>`).join('');
+}
+function render(){
+  document.getElementById('app').innerHTML = screens[state.screen]();
+  renderTabs();
+  document.getElementById('langtoggle').textContent = state.lang==='zh' ? '中' : 'EN';
+}
+render();
+</script>
+</body>
+</html>
