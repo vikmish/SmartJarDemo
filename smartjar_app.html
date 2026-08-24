@@ -452,6 +452,12 @@ const ZH = {
   'Report an issue':'反馈问题', "Tell us what went wrong so detection can improve.":'告诉我们哪里出了问题，帮助改进检测。',
   'Error type':'错误类型', 'Weight':'重量', 'Image':'图像', 'Details (optional)':'详细说明（可选）',
   'Submit report':'提交反馈', 'Cancel':'取消',
+  // alert seed content
+  'Sushi rice is low':'寿司米库存偏低', 'Base battery low':'底座电量低',
+  'Sea salt has not reported':'海盐未上报', 'Coffee beans is low':'咖啡豆库存偏低',
+  'White lentils smell off':'白扁豆有异味', 'Lid battery low':'盖子电量低',
+  'Kitchen · ~20%':'厨房 · ~20%', 'Kitchen · 11%':'厨房 · 11%',
+  'Kitchen':'厨房', 'Pantry':'食品储藏室', 'Bakery':'烘焙区',
   // dashboard
   'My account':'我的账号', 'Manage jars':'管理罐子', 'total':'个', 'Notification alerts':'通知提醒',
   'App version':'应用版本', 'Help':'帮助', 'Log out':'退出登录', 'Vikrant Mishra':'Vikrant Mishra',
@@ -619,7 +625,7 @@ function jarPhotoUrl(j, w, h, variant){
 jars.forEach((j,i)=>attachHistory(j,i));
 
 let latestAlerts = [
-  {id:1, icon:'jars', variant:'lo', title:'Sushi rice is low', meta:'Kitchen · 18%', ts: NOW - 2*HOUR},
+  {id:1, icon:'jars', variant:'lo', title:'Sushi rice is low', meta:'Kitchen · ~20%', ts: NOW - 2*HOUR},
   {id:2, icon:'battery', variant:'lo', title:'Base battery low', meta:'Kitchen · 11%', ts: NOW - 5*HOUR},
   {id:3, icon:'offline', variant:'', title:'Sea salt has not reported', meta:'Bakery', ts: NOW - 3*DAY},
 ];
@@ -976,8 +982,8 @@ function screenAlerts(){
   const row = a => `
     <div class="al" style="padding:11px 0; border-bottom:1px solid var(--fill); ${state.alertsTab==='all'?'opacity:.58':''}">
       <div class="aicon ${a.variant==='lo'?'lo':''}">${ic[a.icon]}</div>
-      <div class="txt"><div class="ti">${a.title}</div>
-        <div class="mt">${a.meta} · ${relTime(since(a.ts))}${a.result?' · '+(a.result==='accepted'?t('accepted'):t('reported')+(a.errType?' ('+t(a.errType)+')':'')):''}</div></div>
+      <div class="txt"><div class="ti">${t(a.title)}</div>
+        <div class="mt">${t(a.meta)} · ${relTime(since(a.ts))}${a.result?' · '+(a.result==='accepted'?t('accepted'):t('reported')+(a.errType?' ('+t(a.errType)+')':'')):''}</div></div>
       ${state.alertsTab==='latest'?`
       <div class="acts">
         <div class="act ok" onclick="acceptAlert(${a.id})">${ic.check}</div>
