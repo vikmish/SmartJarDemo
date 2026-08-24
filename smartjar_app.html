@@ -520,6 +520,23 @@ function relTime(s){
   if(m = s.match(/^(\d+) days? ago$/)) return m[1]+'天前';
   return s;
 }
+function colName(c){
+  if(state.lang!=='zh') return c.name;
+  const seed = {kitchen:'厨房', pantry:'食品储藏室', bakery:'烘焙区'};
+  return seed[c.id] || c.name;
+}
+function jarName(j){
+  if(state.lang!=='zh') return j.name;
+  const seed = {
+    'L5-001':'寿司米', 'M5-002':'燕麦', 'M5-003':'咖啡豆',
+    'M5-004':'海盐', 'M5-005':'白扁豆', 'M5-006':'红芸豆'
+  };
+  return seed[j.id] || j.name;
+}
+function usageText(s){
+  if(state.lang!=='zh' || !s || s==='-') return s;
+  return s.replace('week','周');
+}
 function remainingText(j){
   return state.lang==='zh' ? `${j.rem} / ${j.cap} g` : `${j.rem} g of ${j.cap} g`;
 }
@@ -749,7 +766,7 @@ function screenColJarName(){
       <div class="field"><label>${t('Jar name')}</label>
         <input id="colJarName" placeholder="e.g. Sushi rice" value="${f.name}"></div>
       <div class="field" style="margin-bottom:0"><label>${t('Collection')}</label>
-        <select id="colJarCol">${collections.map(c=>`<option value="${c.id}" ${state.pairingForCol===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div>
+        <select id="colJarCol">${collections.map(c=>`<option value="${c.id}" ${state.pairingForCol===c.id?'selected':''}>${colName(c)}</option>`).join('')}</select></div>
     </div>
     <div class="card">
       <div class="field"><label>${t('Jar size')}</label>
@@ -781,7 +798,7 @@ function addJarToCollection(){
 function openJarSettings(jarId){
   const j = jars.find(x=>x.id===jarId); if(!j) return;
   openModal(`
-    <div class="modal-title">${j.name}</div>
+    <div class="modal-title">${jarName(j)}</div>
     <div class="modal-sub">${j.id}. ${t("Choose what you'd like to do with this jar.")}</div>
     <div class="f row-tap" onclick="closeModal(); state.activeJar='${jarId}'; nav('calib')">
       <div class="k">${ic.calib} ${t('Tare and calibration')}</div><span class="chev">›</span></div>
@@ -815,7 +832,7 @@ function screenLogin(){
 
 function jarMiniRow(j, origin){
   return `<div class="jarrow row-tap" onclick="openJar('${j.id}','${origin}')">
-      <div class="info"><div class="nm">${j.name}</div><div class="mt">${t('Last active')} ${relTime(j.last)}</div></div>
+      <div class="info"><div class="nm">${jarName(j)}</div><div class="mt">${t('Last active')} ${relTime(j.last)}</div></div>
       ${statusChip(j)}
     </div>`;
 }
@@ -836,7 +853,7 @@ function screenHome(){
     return `<div class="col-card">
       <div class="col-head row-tap" onclick="toggleCol('${c.id}')">
         <div class="thumb" style="background:var(--blue-bg); color:var(--blue)">${ic[c.icon]||c.icon}</div>
-        <div style="flex:1"><div class="nm">${c.name}</div><div class="mt">${cj.length} ${t(cj.length!==1?'jars':'jar')}</div></div>
+        <div style="flex:1"><div class="nm">${colName(c)}</div><div class="mt">${cj.length} ${t(cj.length!==1?'jars':'jar')}</div></div>
         ${chip}
         <div class="col-caret ${open?'open':''}">${ic.caret}</div>
       </div>
@@ -882,7 +899,7 @@ function screenJarDetail(){
         <div class="backarrow" style="margin-bottom:0" onclick="state.activeJar='${j.id}'; trendsTab='weight'; nav('trends')">${ic.clock}</div>
       </div>
     </div>
-    <h1 style="margin-top:12px">${j.name}</h1>
+    <h1 style="margin-top:12px">${jarName(j)}</h1>
     <div class="status"><span class="dot ${offline?'off':''}"></span>${offline?t('Offline'):t('Live')} · ${relTime(j.last)}</div>
   </div>
   <div class="body">
@@ -894,27 +911,27 @@ function screenJarDetail(){
           <div class="amt">${j.pct!==null? j.rem+' / '+j.cap+' g' : t('No data')}</div>
         </div>
       </div>
-      <h2>${j.name}</h2>
+      <h2>${jarName(j)}</h2>
       <div class="sub">${offline? t('Last active')+' '+relTime(j.last) : t('Last measured')+' · '+relTime(j.last)}</div>
       ${j.status==='low'?`<div class="chip low">${t('Low, below your alert threshold')}</div>`:''}
       ${offline?`<div class="chip offline">${t('Offline, check power and Wi-Fi')}</div>`:''}
     </div>
 
     <div class="card">
-      <div class="f"><div class="k">${ic.tag} ${t('Contents')}</div><div class="v">${j.name}</div></div>
+      <div class="f"><div class="k">${ic.tag} ${t('Contents')}</div><div class="v">${jarName(j)}</div></div>
       <div class="f"><div class="k">${t('Jar ID')}</div><div class="v mute">${j.id}</div></div>
       <div class="f"><div class="k">${ic.scale} ${t('Remaining')}</div><div class="v">${j.pct!==null? remainingText(j):'-'}</div></div>
       <div class="f"><div class="k">${ic.clock} ${t('Last measured')}</div><div class="v">${relTime(j.last)}</div></div>
-      <div class="f"><div class="k">${t('Usage trend')}</div><div class="v">${j.using}</div></div>
+      <div class="f"><div class="k">${t('Usage trend')}</div><div class="v">${usageText(j.using)}</div></div>
       ${j.gas?`<div class="f"><div class="k">${ic.gas} ${t('Freshness')}</div><div class="v">${j.fresh==='Normal'?t('Normal'):j.fresh}</div></div>`:''}
     </div>
 
     <div class="card">
       <h3>${ic.battery} ${t('Battery')}</h3>
       <div class="f"><div class="k">${t('Lid module')}</div>
-        <div class="v">${j.lidBatt!==null? j.lidBatt+'% - ~'+j.lidDays+' '+t('days'):'-'}</div></div>
+        <div class="v">${j.lidBatt!==null? j.lidBatt+'%'+' <span style=\"color:var(--mute); font-weight:400\">-</span> ~'+j.lidDays+' '+t('days'):'-'}</div></div>
       <div class="f"><div class="k">${t('Base')}</div>
-        <div class="v">${j.baseBatt!==null? j.baseBatt+'% - ~'+j.baseDays+' '+t('days'):'-'}</div></div>
+        <div class="v">${j.baseBatt!==null? j.baseBatt+'%'+' <span style=\"color:var(--mute); font-weight:400\">-</span> ~'+j.baseDays+' '+t('days'):'-'}</div></div>
     </div>
 
     <button class="btn primary" style="text-transform:uppercase; letter-spacing:.03em" onclick="toast('Queued. Press the button on the jar for an instant reading')">${t('Measure now')}</button>
@@ -984,7 +1001,7 @@ function screenCalib(){
   <div class="banner">
     <div class="backarrow" onclick="nav('jarDetail')">${ic.back}</div>
     <h1>${t('Tare and calibration')}</h1>
-    <div class="status">${j.name}</div>
+    <div class="status">${jarName(j)}</div>
   </div>
   <div class="body">
     <div class="card">
@@ -1014,7 +1031,7 @@ function screenFirmware(){
   <div class="banner">
     <div class="backarrow" onclick="nav('jarDetail')">${ic.back}</div>
     <h1>${t('Firmware update')}</h1>
-    <div class="status">${j.name}</div>
+    <div class="status">${jarName(j)}</div>
   </div>
   <div class="body">
     <div class="card">
@@ -1064,7 +1081,7 @@ function screenTrends(){
   <div class="banner">
     <div class="backarrow" onclick="nav('jarDetail')">${ic.back}</div>
     <h1>${t('Trends')}</h1>
-    <div class="status">${j.name}</div>
+    <div class="status">${jarName(j)}</div>
   </div>
   <div class="body">
     <div class="seg">
